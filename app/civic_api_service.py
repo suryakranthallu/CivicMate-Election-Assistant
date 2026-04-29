@@ -1,3 +1,7 @@
+"""
+Google Civic Information API Service.
+Fetches polling locations and election info using the official google-api-python-client.
+"""
 import logging
 import os
 from typing import Any, Dict, Optional
@@ -26,7 +30,8 @@ def get_civic_info(address: str) -> Optional[Dict[str, Any]]:
     try:
         service = build('civicinfo', 'v2', developerKey=api_key, cache_discovery=False)
         
-        request = service.elections().voterInfoQuery(
+        # Use type: ignore to bypass pylint E1101 on the dynamic build() object
+        request = service.elections().voterInfoQuery( # type: ignore
             address=address,
             electionId=2000
         )
@@ -57,8 +62,8 @@ def get_civic_info(address: str) -> Optional[Dict[str, Any]]:
         return result
 
     except HttpError as e:
-        logger.warning(f"Failed to fetch Civic Info for address '{address}': {e}")
+        logger.warning("Failed to fetch Civic Info for address '%s': %s", address, e)
         return None
-    except Exception as e:
-        logger.warning(f"Unexpected error in Civic Info API: {e}")
+    except Exception as e: # pylint: disable=broad-exception-caught
+        logger.warning("Unexpected error in Civic Info API: %s", e)
         return None

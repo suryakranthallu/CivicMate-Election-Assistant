@@ -1,3 +1,7 @@
+"""
+CivicMate Flask Backend.
+Handles routing, session management, and HTTP API endpoints.
+"""
 import logging
 import os
 from typing import Tuple
@@ -67,8 +71,8 @@ def chat() -> Tuple[Response, int]:
         session['chat_history'] = chat_history[-20:]
 
         return jsonify({"response": bot_response}), 200
-    except Exception as e:
-        logger.error(f"SERVER ERROR processing chat: {e}")
+    except Exception as e: # pylint: disable=broad-exception-caught
+        logger.error("SERVER ERROR processing chat: %s", e)
         return jsonify({"error": "Service temporarily unavailable. Please try again."}), 500
 
 

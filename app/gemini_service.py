@@ -1,3 +1,7 @@
+"""
+Google Gemini Service Module.
+Handles the AI chat interactions and intent analysis for CivicMate.
+"""
 import json
 import logging
 import os
@@ -54,7 +58,7 @@ def analyze_voter_intent(user_message: str, chat_history: Optional[List[Dict[str
 
     if not os.getenv("GEMINI_API_KEY"):
         logger.error("Gemini API Key is missing.")
-        raise Exception("Gemini API Key is missing. Check your .env file.")
+        raise ValueError("Gemini API Key is missing. Check your .env file.")
 
     # Check Cache for Efficiency
     history_str = json.dumps(chat_history) if chat_history else "[]"
@@ -67,10 +71,13 @@ def analyze_voter_intent(user_message: str, chat_history: Optional[List[Dict[str
     civic_context = ""
     location = extract_location(user_message)
     if location:
-        logger.info(f"Location detected: {location}. Fetching Google Civic Info...")
+        logger.info("Location detected: %s. Fetching Google Civic Info...", location)
         civic_data = get_civic_info(location)
         if civic_data:
-            civic_context = f"\n[SYSTEM INFO: Google Civic API returned this data for the user's location: {json.dumps(civic_data)}. Use this real data to answer their question about where to vote.]\n"
+            civic_context = (
+                f"\n[SYSTEM INFO: Google Civic API returned this data for the user's location: "
+                f"{json.dumps(civic_data)}. Use this real data to answer their question about where to vote.]\n"
+            )
 
     # Build the full prompt with conversation history for multi-turn context
     full_prompt = SYSTEM_PROMPT + civic_context + "\n\n"
@@ -91,12 +98,13 @@ def analyze_voter_intent(user_message: str, chat_history: Optional[List[Dict[str
         result_text = response.text
 
         # Save to cache
-        _response_cache[cache_key] = result_text
-        if len(_response_cache) > 1000:  # Prevent unbounded memory growth
-            _response_cache.clear()
+        if result_text:
+            _response_cache[cache_key] = result_text
+            if len(_response_cache) > 1000:  # Prevent unbounded memory growth
+                _response_cache.clear()
 
         return result_text
 
-    except Exception as e:
-        logger.error(f"Gemini API Error: {e}")
+    except Exception as e: # pylint: disable=broad-exception-caught
+        logger.error("Gemini API Error: %s", e)
         raise
