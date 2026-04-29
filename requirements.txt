@@ -3,3 +3,4 @@ google-genai==1.73.1
 python-dotenv==1.2.2
 gunicorn==23.0.0
 pytest==9.0.3
+google-api-python-client==2.194.0
