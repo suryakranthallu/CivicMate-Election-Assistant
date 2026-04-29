@@ -68,7 +68,7 @@ def add_security_headers(response: Response) -> Response:
     response.headers['Permissions-Policy'] = (
         'camera=(), microphone=(self), geolocation=()'
     )
-    
+
     # Cache-Control for static assets to maximize Lighthouse/Performance scores
     if request.path.startswith('/static/'):
         response.headers['Cache-Control'] = 'public, max-age=31536000, immutable'
