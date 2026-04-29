@@ -47,6 +47,12 @@ class TestHomeRoute:
 class TestChatRoute:
     """Tests for the chat API endpoint."""
 
+    def test_chat_invalid_request_returns_400(self, client):
+        """Test that missing JSON data returns 400."""
+        response = client.post('/chat', data="Not JSON")
+        assert response.status_code == 400
+        assert b"Invalid request" in response.data
+
     def test_chat_empty_message_returns_400(self, client):
         """Empty message should return 400 error."""
         response = client.post('/chat',

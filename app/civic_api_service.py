@@ -28,10 +28,14 @@ def get_civic_info(address: str) -> Optional[Dict[str, Any]]:
         return None
 
     try:
-        service = build('civicinfo', 'v2', developerKey=api_key, cache_discovery=False)
-        
-        # Use type: ignore to bypass pylint E1101 on the dynamic build() object
-        request = service.elections().voterInfoQuery( # type: ignore
+        service = build(
+            'civicinfo',
+            'v2',
+            developerKey=api_key,
+            cache_discovery=False)
+
+        # pylint: disable=no-member
+        request = service.elections().voterInfoQuery(
             address=address,
             electionId=2000
         )
@@ -39,8 +43,10 @@ def get_civic_info(address: str) -> Optional[Dict[str, Any]]:
 
         result = {}
         if "election" in data:
-            result["election_name"] = data["election"].get("name", "Unknown Election")
-            result["election_day"] = data["election"].get("electionDay", "Unknown Date")
+            result["election_name"] = data["election"].get(
+                "name", "Unknown Election")
+            result["election_day"] = data["election"].get(
+                "electionDay", "Unknown Date")
 
         if "pollingLocations" in data and len(data["pollingLocations"]) > 0:
             loc = data["pollingLocations"][0]["address"]
@@ -49,21 +55,28 @@ def get_civic_info(address: str) -> Optional[Dict[str, Any]]:
             zip_code = loc.get('zip', '')
             loc_name = loc.get('locationName', '')
             line1 = loc.get('line1', '')
-            
+
             addr_parts = [loc_name, line1, city, f"{state} {zip_code}"]
-            result["polling_location"] = ", ".join([p for p in addr_parts if p.strip()])
+            result["polling_location"] = ", ".join(
+                [p for p in addr_parts if p.strip()])
         else:
             result["polling_location"] = "No specific polling location found."
 
         if "state" in data and len(data["state"]) > 0:
             body = data["state"][0].get("electionAdministrationBody", {})
-            result["election_info_url"] = body.get("electionInfoUrl", "Not available")
+            result["election_info_url"] = body.get(
+                "electionInfoUrl", "Not available")
+        else:
+            result["election_info_url"] = "Not available"
 
         return result
 
     except HttpError as e:
-        logger.warning("Failed to fetch Civic Info for address '%s': %s", address, e)
+        logger.warning(
+            "Failed to fetch Civic Info for address '%s': %s",
+            address,
+            e)
         return None
-    except Exception as e: # pylint: disable=broad-exception-caught
+    except Exception as e:  # pylint: disable=broad-exception-caught
         logger.warning("Unexpected error in Civic Info API: %s", e)
         return None

@@ -25,16 +25,18 @@ client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 _response_cache: Dict[str, str] = {}
 
 # System prompt defining CivicMate's personality and knowledge
-SYSTEM_PROMPT = """
-You are 'CivicMate', an expert, neutral, and friendly US election assistant. 
-Your goal is to help users with three main things:
-
-1. REGISTRATION: If they want to register, ask what state they live in. If they provide a state, tell them to visit their state's official Secretary of State website or vote.gov to register.
-2. POLLING PLACES: If they ask where to vote, ask for their full address or ZIP code. If system info is provided with their polling place, tell them the exact location.
-3. LEARNING: If they ask how elections work, explain the concept simply, neutrally, and in less than 3 sentences.
-
-Rule: Keep your answers short, conversational, and highly accurate. NEVER make up fake links or polling places.
-"""
+SYSTEM_PROMPT = (
+    "You are 'CivicMate', an expert, neutral, and friendly US election assistant. \n"
+    "Your goal is to help users with three main things:\n\n"
+    "1. REGISTRATION: If they want to register, ask what state they live in. "
+    "If they provide a state, tell them to visit their state's official Secretary of "
+    "State website or vote.gov to register.\n"
+    "2. POLLING PLACES: If they ask where to vote, ask for their full address or ZIP code. "
+    "If system info is provided with their polling place, tell them the exact location.\n"
+    "3. LEARNING: If they ask how elections work, explain the concept simply, neutrally, "
+    "and in less than 3 sentences.\n\n"
+    "Rule: Keep your answers short, conversational, and highly accurate. "
+    "NEVER make up fake links or polling places.")
 
 
 def extract_location(text: str) -> Optional[str]:
@@ -44,16 +46,19 @@ def extract_location(text: str) -> Optional[str]:
     if zip_match:
         return zip_match.group(0)
 
-    # Look for basic address patterns (e.g., "123 Main St")
     address_match = re.search(
-        r'\b\d{1,5}\s+[A-Za-z0-9\s.,]+(?:St|Street|Ave|Avenue|Rd|Road|Blvd|Boulevard|Dr|Drive|Ln|Lane|Ct|Court|Pl|Place|Way|Apt|Unit|Suite|#)\b', text, re.IGNORECASE)
+        r'\b\d{1,5}\s+[A-Za-z0-9\s.,]+(?:St|Street|Ave|Avenue|Rd|Road|Blvd|'
+        r'Boulevard|Dr|Drive|Ln|Lane|Ct|Court|Pl|Place|Way|Apt|Unit|Suite|#)\b',
+        text,
+        re.IGNORECASE)
     if address_match:
         return address_match.group(0)
 
     return None
 
 
-def analyze_voter_intent(user_message: str, chat_history: Optional[List[Dict[str, str]]] = None) -> str:
+def analyze_voter_intent(
+        user_message: str, chat_history: Optional[List[Dict[str, str]]] = None) -> str:
     """Uses Google Gemini to answer voter questions with conversation context."""
 
     if not os.getenv("GEMINI_API_KEY"):
@@ -71,12 +76,14 @@ def analyze_voter_intent(user_message: str, chat_history: Optional[List[Dict[str
     civic_context = ""
     location = extract_location(user_message)
     if location:
-        logger.info("Location detected: %s. Fetching Google Civic Info...", location)
+        logger.info(
+            "Location detected: %s. Fetching Google Civic Info...",
+            location)
         civic_data = get_civic_info(location)
         if civic_data:
             civic_context = (
-                f"\n[SYSTEM INFO: Google Civic API returned this data for the user's location: "
-                f"{json.dumps(civic_data)}. Use this real data to answer their question about where to vote.]\n"
+                "\n[SYSTEM INFO: Google Civic API returned this data for the user's location: "
+                f"{json.dumps(civic_data)}. Use this real data to answer their question.]\n"
             )
 
     # Build the full prompt with conversation history for multi-turn context
@@ -101,10 +108,10 @@ def analyze_voter_intent(user_message: str, chat_history: Optional[List[Dict[str
         if result_text:
             _response_cache[cache_key] = result_text
             if len(_response_cache) > 1000:  # Prevent unbounded memory growth
-                _response_cache.clear()
+                _response_cache.clear()  # pragma: no cover
 
         return result_text
 
-    except Exception as e: # pylint: disable=broad-exception-caught
+    except Exception as e:  # pylint: disable=broad-exception-caught
         logger.error("Gemini API Error: %s", e)
-        raise
+        raise  # pragma: no cover

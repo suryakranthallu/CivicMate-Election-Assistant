@@ -12,7 +12,10 @@ from flask import Flask, Response, jsonify, render_template, request, session
 from app.gemini_service import analyze_voter_intent
 
 # Configure structured logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 logger = logging.getLogger(__name__)
 
 load_dotenv()
@@ -42,7 +45,7 @@ def home() -> str:
 @app.route('/chat', methods=['POST'])
 def chat() -> Tuple[Response, int]:
     """Handle incoming chat messages and return AI responses."""
-    data = request.json
+    data = request.get_json(silent=True)
     if not data:
         return jsonify({"error": "Invalid request"}), 400
 
@@ -61,7 +64,7 @@ def chat() -> Tuple[Response, int]:
     chat_history = session.get('chat_history', [])
 
     try:
-        logger.info(f"Processing message: '{user_message[:50]}...'")
+        logger.info("Processing message: '%s...'", user_message[:50])
         bot_response = analyze_voter_intent(user_message, chat_history)
 
         # Save this exchange to session history
@@ -76,5 +79,5 @@ def chat() -> Tuple[Response, int]:
         return jsonify({"error": "Service temporarily unavailable. Please try again."}), 500
 
 
-if __name__ == '__main__':
+if __name__ == '__main__': # pragma: no cover
     app.run(debug=True, port=5000)
