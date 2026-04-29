@@ -1,6 +1,7 @@
 """
 Google Civic Information API Service.
-Fetches polling locations and election info using the official google-api-python-client.
+Fetches polling locations and election info
+using the official google-api-python-client.
 """
 import logging
 import os
@@ -14,25 +15,27 @@ logger = logging.getLogger(__name__)
 
 def get_civic_info(address: str) -> Optional[Dict[str, Any]]:
     """
-    Fetches voter information from the Google Civic Information API.
+    Fetch voter info from the Google Civic Information API.
 
     Args:
-        address (str): The voter's registered address.
+        address: The voter's registered address or ZIP code.
 
     Returns:
-        Optional[Dict[str, Any]]: Dictionary containing polling locations.
+        Dictionary with polling locations, or None on failure.
     """
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
-        logger.error("API Key missing for Google Civic Information API.")
+        logger.error(
+            "API Key missing for Google Civic Information API."
+        )
         return None
 
     try:
         service = build(
-            'civicinfo',
-            'v2',
+            'civicinfo', 'v2',
             developerKey=api_key,
-            cache_discovery=False)
+            cache_discovery=False
+        )
 
         # pylint: disable=no-member
         request = service.elections().voterInfoQuery(
@@ -41,42 +44,52 @@ def get_civic_info(address: str) -> Optional[Dict[str, Any]]:
         )
         data = request.execute()
 
-        result = {}
+        result: Dict[str, Any] = {}
+
         if "election" in data:
             result["election_name"] = data["election"].get(
-                "name", "Unknown Election")
+                "name", "Unknown Election"
+            )
             result["election_day"] = data["election"].get(
-                "electionDay", "Unknown Date")
+                "electionDay", "Unknown Date"
+            )
 
-        if "pollingLocations" in data and len(data["pollingLocations"]) > 0:
+        if "pollingLocations" in data and data["pollingLocations"]:
             loc = data["pollingLocations"][0]["address"]
-            city = loc.get('city', '')
-            state = loc.get('state', '')
-            zip_code = loc.get('zip', '')
-            loc_name = loc.get('locationName', '')
-            line1 = loc.get('line1', '')
-
-            addr_parts = [loc_name, line1, city, f"{state} {zip_code}"]
+            parts = [
+                loc.get('locationName', ''),
+                loc.get('line1', ''),
+                loc.get('city', ''),
+                loc.get('state', '') + ' ' + loc.get('zip', '')
+            ]
             result["polling_location"] = ", ".join(
-                [p for p in addr_parts if p.strip()])
+                [p for p in parts if p.strip()]
+            )
         else:
-            result["polling_location"] = "No specific polling location found."
+            result["polling_location"] = (
+                "No specific polling location found."
+            )
 
-        if "state" in data and len(data["state"]) > 0:
-            body = data["state"][0].get("electionAdministrationBody", {})
+        if "state" in data and data["state"]:
+            body = data["state"][0].get(
+                "electionAdministrationBody", {}
+            )
             result["election_info_url"] = body.get(
-                "electionInfoUrl", "Not available")
+                "electionInfoUrl", "Not available"
+            )
         else:
             result["election_info_url"] = "Not available"
 
         return result
 
-    except HttpError as e:
+    except HttpError as exc:
         logger.warning(
-            "Failed to fetch Civic Info for address '%s': %s",
-            address,
-            e)
+            "Civic Info API HttpError for '%s': %s",
+            address, exc
+        )
         return None
-    except Exception as e:  # pylint: disable=broad-exception-caught
-        logger.warning("Unexpected error in Civic Info API: %s", e)
+    except Exception as exc:  # pylint: disable=broad-exception-caught
+        logger.warning(
+            "Unexpected error in Civic Info API: %s", exc
+        )
         return None

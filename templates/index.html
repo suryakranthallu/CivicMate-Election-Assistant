@@ -9,6 +9,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     
     <!-- Google Services Integration: Google Analytics (Placeholder for score validation) -->
@@ -26,8 +28,13 @@
 
     <main class="chat-container" role="main">
         <header class="chat-header">
-            <h1>🇺🇸 CivicMate</h1>
-            <p>Your Smart Election Assistant</p>
+            <div class="header-title">
+                <h1>🇺🇸 CivicMate</h1>
+                <p>Your Smart Election Assistant</p>
+            </div>
+            <button id="theme-toggle" class="icon-btn" aria-label="Toggle Dark Mode">
+                <i class="fas fa-moon"></i>
+            </button>
         </header>
 
         <div class="chat-box" id="chat-box" role="log" aria-live="polite" aria-label="Chat messages">
@@ -44,6 +51,9 @@
         </div>
 
         <form class="input-area" id="chat-form" aria-label="Chat input form">
+            <button type="button" id="mic-btn" class="icon-btn" aria-label="Use Microphone">
+                <i class="fas fa-microphone"></i>
+            </button>
             <label for="user-input" class="visually-hidden">Type your question for CivicMate</label>
             <input type="text" id="user-input" placeholder="Type your question here..." required
                 aria-label="Type your question" maxlength="500" autocomplete="off">
@@ -60,7 +70,45 @@
         const sendBtn = document.getElementById('send-btn');
         const chatBox = document.getElementById('chat-box');
         const quickActions = document.getElementById('quick-actions');
+        const themeToggle = document.getElementById('theme-toggle');
+        const micBtn = document.getElementById('mic-btn');
         let isWaiting = false;
+
+        // Dark Mode Logic
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark-mode');
+            themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+        }
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            themeToggle.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+        });
+
+        // Voice Recognition Logic
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (SpeechRecognition) {
+            const recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+
+            micBtn.addEventListener('click', () => {
+                recognition.start();
+                micBtn.style.color = '#e53e3e';
+            });
+
+            recognition.onresult = (event) => {
+                const text = event.results[0][0].transcript;
+                inputField.value = text;
+                micBtn.style.color = '';
+                sendMessage(text);
+            };
+            recognition.onerror = () => { micBtn.style.color = ''; };
+            recognition.onend = () => { micBtn.style.color = ''; };
+        } else {
+            micBtn.style.display = 'none';
+        }
 
         // Handle form submission
         chatForm.addEventListener('submit', async function (e) {
@@ -70,7 +118,6 @@
             await sendMessage(userText);
         });
 
-        // Handle quick action buttons
         quickActions.addEventListener('click', async function (e) {
             const btn = e.target.closest('.quick-btn');
             if (!btn || isWaiting) return;
@@ -82,41 +129,45 @@
         });
 
         async function sendMessage(text) {
-            // Hide quick actions after first message
-            if (quickActions) {
-                quickActions.style.display = 'none';
-            }
+            if (quickActions) quickActions.style.display = 'none';
 
-            // Display user message
-            appendMessage('user-message', text, 'You');
+            appendMessage('user-message', text, 'You', false);
             inputField.value = '';
 
-            // Disable input while waiting
             isWaiting = true;
             sendBtn.disabled = true;
             inputField.disabled = true;
 
-            // Show typing indicator
-            const loadingId = appendTypingIndicator();
+            const botMsgId = appendMessage('bot-message', '', 'CivicMate', false);
+            const botMsgEl = document.getElementById(botMsgId).querySelector('.message-content');
+            botMsgEl.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div>';
 
             try {
-                const response = await fetch('/chat', {
+                const response = await fetch('/chat_stream', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ message: text })
                 });
 
-                const data = await response.json();
-                removeElement(loadingId);
+                if (!response.ok) {
+                    botMsgEl.innerHTML = marked.parse("Error: Unable to connect.");
+                    return;
+                }
 
-                if (data.response) {
-                    appendMessage('bot-message', data.response, 'CivicMate');
-                } else {
-                    appendMessage('bot-message error-message', data.error || "Something went wrong.", 'CivicMate');
+                botMsgEl.innerHTML = '';
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder("utf-8");
+                let fullText = "";
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    fullText += decoder.decode(value, { stream: true });
+                    botMsgEl.innerHTML = marked.parse(fullText);
+                    chatBox.scrollTop = chatBox.scrollHeight;
                 }
             } catch (error) {
-                removeElement(loadingId);
-                appendMessage('bot-message error-message', "Unable to connect. Please check your connection and try again.", 'CivicMate');
+                botMsgEl.innerHTML = marked.parse("Error: Connection lost.");
             } finally {
                 isWaiting = false;
                 sendBtn.disabled = false;
@@ -125,7 +176,7 @@
             }
         }
 
-        function appendMessage(className, text, sender) {
+        function appendMessage(className, text, sender, isMarkdown=false) {
             const msgDiv = document.createElement('div');
             msgDiv.className = `message ${className}`;
             msgDiv.setAttribute('role', 'article');
@@ -137,7 +188,7 @@
 
             const content = document.createElement('span');
             content.className = 'message-content';
-            content.textContent = text;
+            content.innerHTML = isMarkdown ? marked.parse(text) : text;
 
             msgDiv.appendChild(label);
             msgDiv.appendChild(content);
@@ -149,29 +200,6 @@
             return id;
         }
 
-        function appendTypingIndicator() {
-            const indicator = document.createElement('div');
-            indicator.className = 'message bot-message typing-indicator';
-            indicator.setAttribute('aria-label', 'CivicMate is typing');
-            indicator.innerHTML = `
-                <span class="message-label" aria-hidden="true">CivicMate</span>
-                <div class="typing-dots">
-                    <span></span><span></span><span></span>
-                </div>
-            `;
-            const id = 'typing-' + Date.now();
-            indicator.id = id;
-            chatBox.appendChild(indicator);
-            chatBox.scrollTop = chatBox.scrollHeight;
-            return id;
-        }
-
-        function removeElement(id) {
-            const el = document.getElementById(id);
-            if (el) el.remove();
-        }
-
-        // Allow Enter to send, Shift+Enter for newline concept (future)
         inputField.addEventListener('keydown', function (e) {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
