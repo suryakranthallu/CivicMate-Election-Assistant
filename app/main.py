@@ -14,6 +14,15 @@ load_dotenv()
 app = Flask(__name__, template_folder='../templates', static_folder='../static')
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "civicmate-dev-secret-key-change-in-prod")
 
+@app.after_request
+def add_security_headers(response: Response) -> Response:
+    """Add robust security headers to all responses."""
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+    return response
+
 @app.route('/')
 def home() -> str:
     """Serve the main chat interface and reset conversation history."""
