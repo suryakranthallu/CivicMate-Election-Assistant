@@ -1,0 +1,11 @@
+.env
+.env.txt
+venv/
+__pycache__/
+*.pyc
+.git/
+.pytest_cache/
+tests/
+desktop.ini
+.gitignore
+README.md
