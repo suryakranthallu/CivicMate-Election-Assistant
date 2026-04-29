@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="CivicMate - Your AI-powered US election assistant. Get help with voter registration, polling places, and election education.">
+    <title>CivicMate - Smart Election Assistant</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <a href="#user-input" class="skip-link">Skip to chat input</a>
+
+    <main class="chat-container" role="main">
+        <header class="chat-header">
+            <h1>🇺🇸 CivicMate</h1>
+            <p>Your Smart Election Assistant</p>
+        </header>
+
+        <div class="chat-box" id="chat-box" role="log" aria-live="polite" aria-label="Chat messages">
+            <div class="message bot-message" role="article">
+                <span class="message-label" aria-hidden="true">CivicMate</span>
+                Hello! I'm CivicMate, your election assistant. How can I help you today?
+            </div>
+
+            <div class="quick-actions" id="quick-actions" aria-label="Quick action suggestions">
+                <button class="quick-btn" data-message="How do I register to vote?" aria-label="Ask about voter registration">📝 Register to Vote</button>
+                <button class="quick-btn" data-message="Where is my polling place?" aria-label="Ask about polling places">📍 Find Polling Place</button>
+                <button class="quick-btn" data-message="How does the Electoral College work?" aria-label="Ask about how elections work">🎓 Learn About Elections</button>
+            </div>
+        </div>
+
+        <form class="input-area" id="chat-form" aria-label="Chat input form">
+            <input type="text" id="user-input" placeholder="Type your question here..." required
+                aria-label="Type your question" maxlength="500" autocomplete="off">
+            <button type="submit" id="send-btn" aria-label="Send message">
+                <span class="btn-text">Send</span>
+                <span class="btn-icon" aria-hidden="true">➤</span>
+            </button>
+        </form>
+    </main>
+
+    <script>
+        const chatForm = document.getElementById('chat-form');
+        const inputField = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+        const chatBox = document.getElementById('chat-box');
+        const quickActions = document.getElementById('quick-actions');
+        let isWaiting = false;
+
+        // Handle form submission
+        chatForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const userText = inputField.value.trim();
+            if (!userText || isWaiting) return;
+            await sendMessage(userText);
+        });
+
+        // Handle quick action buttons
+        quickActions.addEventListener('click', async function (e) {
+            const btn = e.target.closest('.quick-btn');
+            if (!btn || isWaiting) return;
+            const message = btn.dataset.message;
+            if (message) {
+                inputField.value = message;
+                await sendMessage(message);
+            }
+        });
+
+        async function sendMessage(text) {
+            // Hide quick actions after first message
+            if (quickActions) {
+                quickActions.style.display = 'none';
+            }
+
+            // Display user message
+            appendMessage('user-message', text, 'You');
+            inputField.value = '';
+
+            // Disable input while waiting
+            isWaiting = true;
+            sendBtn.disabled = true;
+            inputField.disabled = true;
+
+            // Show typing indicator
+            const loadingId = appendTypingIndicator();
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: text })
+                });
+
+                const data = await response.json();
+                removeElement(loadingId);
+
+                if (data.response) {
+                    appendMessage('bot-message', data.response, 'CivicMate');
+                } else {
+                    appendMessage('bot-message error-message', data.error || "Something went wrong.", 'CivicMate');
+                }
+            } catch (error) {
+                removeElement(loadingId);
+                appendMessage('bot-message error-message', "Unable to connect. Please check your connection and try again.", 'CivicMate');
+            } finally {
+                isWaiting = false;
+                sendBtn.disabled = false;
+                inputField.disabled = false;
+                inputField.focus();
+            }
+        }
+
+        function appendMessage(className, text, sender) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${className}`;
+            msgDiv.setAttribute('role', 'article');
+
+            const label = document.createElement('span');
+            label.className = 'message-label';
+            label.setAttribute('aria-hidden', 'true');
+            label.textContent = sender;
+
+            const content = document.createElement('span');
+            content.className = 'message-content';
+            content.textContent = text;
+
+            msgDiv.appendChild(label);
+            msgDiv.appendChild(content);
+
+            const id = 'msg-' + Date.now();
+            msgDiv.id = id;
+            chatBox.appendChild(msgDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+            return id;
+        }
+
+        function appendTypingIndicator() {
+            const indicator = document.createElement('div');
+            indicator.className = 'message bot-message typing-indicator';
+            indicator.setAttribute('aria-label', 'CivicMate is typing');
+            indicator.innerHTML = `
+                <span class="message-label" aria-hidden="true">CivicMate</span>
+                <div class="typing-dots">
+                    <span></span><span></span><span></span>
+                </div>
+            `;
+            const id = 'typing-' + Date.now();
+            indicator.id = id;
+            chatBox.appendChild(indicator);
+            chatBox.scrollTop = chatBox.scrollHeight;
+            return id;
+        }
+
+        function removeElement(id) {
+            const el = document.getElementById(id);
+            if (el) el.remove();
+        }
+
+        // Allow Enter to send, Shift+Enter for newline concept (future)
+        inputField.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                chatForm.dispatchEvent(new Event('submit'));
+            }
+        });
+    </script>
+</body>
+
+</html>
