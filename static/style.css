@@ -7,14 +7,14 @@
 
 body {
     font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    /* Animated Indian Tricolor Live Wallpaper */
-    background: linear-gradient(-45deg,
-        #FF9933, #FFB366, #FFFFFF, #FFFFFF,
-        #90EE90, #138808, #0d6b06,
-        #138808, #FFFFFF, #FFFFFF,
-        #FFB366, #FF9933) !important;
-    background-size: 400% 400% !important;
-    animation: tricolorFlow 12s ease infinite !important;
+    /* Animated Indian Flag — Horizontal waving tricolor */
+    background: linear-gradient(90deg,
+        #FF9933 0%, #FF9933 15%,
+        #FFFFFF 30%, #FFFFFF 45%,
+        #138808 60%, #138808 75%,
+        #FFFFFF 85%, #FF9933 100%) !important;
+    background-size: 300% 100% !important;
+    animation: flagWave 6s linear infinite !important;
     display: flex !important;
     flex-direction: column !important;
     justify-content: center !important;
@@ -24,12 +24,9 @@ body {
     margin: 0 !important;
 }
 
-@keyframes tricolorFlow {
+@keyframes flagWave {
     0%   { background-position: 0% 50%; }
-    25%  { background-position: 50% 100%; }
-    50%  { background-position: 100% 50%; }
-    75%  { background-position: 50% 0%; }
-    100% { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
 }
 
 /* ===== DISCLAIMER FOOTER ===== */
@@ -423,23 +420,26 @@ body {
     cursor: not-allowed;
 }
 
-.send-btn {
-    background: #000080; /* Navy Blue */
-    color: white;
-    border: none;
+#send-btn {
+    background: linear-gradient(135deg, #FF9933, #138808) !important;
+    color: white !important;
+    border: none !important;
     border-radius: 12px;
-    padding: 0 20px;
-    font-weight: 600;
+    padding: 12px 24px;
+    font-weight: 700;
+    font-size: 0.9rem;
     cursor: pointer;
     transition: all 0.2s ease;
     display: flex;
     align-items: center;
     gap: 8px;
+    letter-spacing: 0.02em;
+    box-shadow: 0 4px 12px rgba(255, 153, 51, 0.3);
 }
 
-.send-btn:hover:not(:disabled) {
-    background: #1a365d;
-    transform: translateY(-1px);
+#send-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 153, 51, 0.4);
 }
 
 #send-btn:active:not(:disabled) {
@@ -458,13 +458,13 @@ body {
 
 /* ===== DARK MODE ===== */
 body.dark-mode {
-    background: linear-gradient(-45deg,
-        #cc7a29, #995c1f, #1a1a2e, #1a1a2e,
-        #0a5e04, #064d03, #032601,
-        #064d03, #1a1a2e, #1a1a2e,
-        #995c1f, #cc7a29) !important;
-    background-size: 400% 400% !important;
-    animation: tricolorFlow 12s ease infinite !important;
+    background: linear-gradient(90deg,
+        #cc7a29 0%, #cc7a29 15%,
+        #2d2d3d 30%, #2d2d3d 45%,
+        #0a5e04 60%, #0a5e04 75%,
+        #2d2d3d 85%, #cc7a29 100%) !important;
+    background-size: 300% 100% !important;
+    animation: flagWave 6s linear infinite !important;
 }
 
 body.dark-mode .chat-container {
