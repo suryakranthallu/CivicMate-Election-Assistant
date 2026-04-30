@@ -2,6 +2,7 @@
 CivicMate Flask Backend.
 Handles routing, session management, and HTTP API endpoints.
 """
+# pylint: disable=redefined-outer-name, import-outside-toplevel, wrong-import-position
 import base64
 import logging
 import os
@@ -9,7 +10,7 @@ from dotenv import load_dotenv
 
 from flask import (
     Flask, Response, jsonify, render_template,
-    request, session, stream_with_context, send_from_directory
+    request, session, stream_with_context
 )
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address

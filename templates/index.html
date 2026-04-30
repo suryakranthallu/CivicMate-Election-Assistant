@@ -277,8 +277,31 @@
                         body: JSON.stringify({ image: selectedImage, message: text })
                     });
                     const data = await response.json();
-                    botMsgEl.innerHTML = marked.parse(data.analysis || "Error analyzing image.");
-                    speak(botMsgEl.innerText);
+                    
+                    let displayContent = data.analysis || "Error analyzing image.";
+                    let reasoningContent = "";
+                    
+                    // Extract Reasoning
+                    const reasoningMatch = displayContent.match(/\[REASONING\]([\s\S]*?)\[\/REASONING\]/);
+                    if (reasoningMatch) {
+                        reasoningContent = reasoningMatch[1].trim();
+                        displayContent = displayContent.replace(reasoningMatch[0], '');
+                    }
+
+                    // Update UI
+                    let finalHTML = "";
+                    if (reasoningContent && showReasoning) {
+                        finalHTML += `<div class="reasoning-trace">
+                            <div class="reasoning-header"><i class="fas fa-microchip"></i> AI Thinking Trace</div>
+                            <div class="reasoning-content">${marked.parse(reasoningContent)}</div>
+                        </div>`;
+                    }
+                    finalHTML += marked.parse(displayContent);
+
+                    botMsgEl.innerHTML = finalHTML;
+                    
+                    const speechText = displayContent.replace(/[#*`]/g, '');
+                    speak(speechText);
                 } catch (e) {
                     botMsgEl.innerHTML = "Error connecting to vision service.";
                 } finally {

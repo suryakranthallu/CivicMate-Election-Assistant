@@ -23,20 +23,32 @@ def analyze_id_document(image_data: str, state: Optional[str] = None) -> str:
     """
     try:
         prompt = (
-            "You are the 'CivicMate ID Assistant'. Analyze this image of a document "
-            "and determine if it is a valid form of Voter ID. "
+            "You are the 'Digital Polling Officer' for the Election Commission of India (ECI). "
+            "Analyze this image of a document to verify voter eligibility based on ECI rules.\n\n"
         )
         if state:
-            prompt += f"Focus specifically on the laws for the state of {state}. "
+            prompt += (
+                f"Additionally, consider specific voting regulations for the state of {state}.\n\n"
+            )
 
         prompt += (
-            "\n\nInstructions:\n"
-            "1. Identify the document type (e.g., Driver's License, Passport, Utility Bill).\n"
-            "2. Check if it typically meets voter ID requirements (photo, expiration, etc.).\n"
-            "3. DO NOT output any personal identifiable information (PII) like names or numbers.\n"
-            "4. Provide a clear 'Verification Status' (Likely Valid / Needs More Info / Invalid).\n"
-            "5. If it's a utility bill, explain that it's often used as secondary proof.\n\n"
-            "Safety: If the image is not a document, say 'No valid document detected.'"
+            "**INDIAN ECI VALIDATION RULES:**\n"
+            "1. **Document Type:** Is it an ECI-approved ID? Valid examples include EPIC/Voter ID, "
+            "Aadhaar, PAN Card, Passport, Driving License, MGNREGA card, or Bank Passbook with "
+            "photo.\n"
+            "2. **Clarity/Legibility:** Is the photo clear? Are the name and key details "
+            "readable?\n"
+            "3. **Age Check:** If the Date of Birth (DOB) is visible, is the user likely 18 "
+            "years or older?\n\n"
+            "**OUTPUT FORMAT:**\n"
+            "You MUST output your evaluation process inside an exact `[REASONING]...[/REASONING]` "
+            "block. List your step-by-step logic checking the three rules above.\n"
+            "After the `[REASONING]` block, provide a polite, neutral, and helpful conversational "
+            "response addressing the user directly. (e.g., 'I see you have uploaded an Aadhaar "
+            "card. It looks clear, but please ensure your current address matches your voting "
+            "constituency.')\n"
+            "DO NOT output any personal identifiable information (PII) like names or full ID "
+            "numbers."
         )
 
         response = client.models.generate_content(

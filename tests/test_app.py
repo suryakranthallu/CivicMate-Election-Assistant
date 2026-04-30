@@ -1,3 +1,5 @@
+"""Unit tests for CivicMate Election Assistant."""
+# pylint: disable=redefined-outer-name, import-outside-toplevel, wrong-import-position
 import os
 import sys
 
