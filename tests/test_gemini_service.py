@@ -229,6 +229,75 @@ class TestAnalyzeVoterIntent:
         assert "20240520" in response
         assert "[REASONING]" in response
 
+    @patch('app.gemini_service.client')
+    @patch('app.gemini_service.get_civic_info')
+    @patch('app.gemini_service.os.getenv')
+    def test_predictive_crowd_morning(self, mock_getenv, mock_civic, mock_client):
+        """Should handle crowd prediction for Morning Rush."""
+        mock_getenv.return_value = "TEST_KEY"
+        mock_civic.return_value = None
+
+        mock_response = MagicMock()
+        mock_response.text = (
+            "[REASONING]7 AM to 9 AM is Morning Rush due to seniors and "
+            "office workers.[/REASONING]\n"
+            "Expect high crowds."
+        )
+        mock_client.models.generate_content.return_value = mock_response
+
+        from app.gemini_service import _response_cache
+        _response_cache.clear()
+
+        response = analyze_voter_intent("Is 8 AM a good time?")
+        assert "Morning Rush" in response
+        assert "high crowds" in response
+
+    @patch('app.gemini_service.client')
+    @patch('app.gemini_service.get_civic_info')
+    @patch('app.gemini_service.os.getenv')
+    def test_predictive_crowd_midday(self, mock_getenv, mock_civic, mock_client):
+        """Should handle crowd prediction for Mid-Day Lull."""
+        mock_getenv.return_value = "TEST_KEY"
+        mock_civic.return_value = None
+
+        mock_response = MagicMock()
+        mock_response.text = (
+            "[REASONING]1 PM to 3 PM is Mid-Day Lull due to peak "
+            "heat.[/REASONING]\n"
+            "Expect low crowds."
+        )
+        mock_client.models.generate_content.return_value = mock_response
+
+        from app.gemini_service import _response_cache
+        _response_cache.clear()
+
+        response = analyze_voter_intent("Is 2 PM a good time?")
+        assert "Mid-Day Lull" in response
+        assert "low crowds" in response
+
+    @patch('app.gemini_service.client')
+    @patch('app.gemini_service.get_civic_info')
+    @patch('app.gemini_service.os.getenv')
+    def test_predictive_crowd_evening(self, mock_getenv, mock_civic, mock_client):
+        """Should handle crowd prediction for Evening Surge."""
+        mock_getenv.return_value = "TEST_KEY"
+        mock_civic.return_value = None
+
+        mock_response = MagicMock()
+        mock_response.text = (
+            "[REASONING]4 PM to 6 PM is Evening Surge due to returning "
+            "workers.[/REASONING]\n"
+            "Expect high crowds."
+        )
+        mock_client.models.generate_content.return_value = mock_response
+
+        from app.gemini_service import _response_cache
+        _response_cache.clear()
+
+        response = analyze_voter_intent("Is 5 PM a good time?")
+        assert "Evening Surge" in response
+        assert "high crowds" in response
+
 
 class TestAnalyzeVoterIntentStream:
     """Tests for analyze_voter_intent_stream."""
