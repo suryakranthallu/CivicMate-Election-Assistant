@@ -40,10 +40,15 @@ logger = logging.getLogger(__name__)
 
 load_dotenv()
 
+# Define absolute paths for cross-platform reliability
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+TEMPLATE_DIR = os.path.join(BASE_DIR, "templates")
+STATIC_DIR = os.path.join(BASE_DIR, "static")
+
 app = Flask(
     __name__,
-    template_folder='../templates',
-    static_folder='../static'
+    template_folder=TEMPLATE_DIR,
+    static_folder=STATIC_DIR
 )
 app.secret_key = os.getenv("FLASK_SECRET_KEY", os.urandom(24))
 
@@ -95,7 +100,7 @@ def add_security_headers(response: Response) -> Response:
 @app.route('/robots.txt')
 def robots():
     """Serve robots.txt from static directory."""
-    return send_from_directory(app.static_folder, 'robots.txt')
+    return send_from_directory(STATIC_DIR, 'robots.txt')
 
 
 @app.route('/sitemap.xml')
