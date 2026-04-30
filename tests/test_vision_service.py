@@ -1,7 +1,13 @@
 """
 Tests for the vision service module.
 """
+import os
+import sys
 from unittest.mock import patch, MagicMock
+
+# Ensure app is in path before imports
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from app.vision_service import analyze_id_document
 
 

@@ -1,15 +1,13 @@
-"""Unit tests for CivicMate Election Assistant."""
-# pylint: disable=redefined-outer-name,import-outside-toplevel
-import json
 import os
 import sys
+
+# Ensure app is in path before imports
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+import json
 from unittest.mock import patch
-
 import pytest
-
 from app.main import app
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 
 @pytest.fixture
