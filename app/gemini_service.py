@@ -19,7 +19,10 @@ logger = logging.getLogger(__name__)
 load_dotenv()
 
 # Initialize Gemini client (reused across requests for efficiency)
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+# A fallback key is provided so pytest can import this module in CI environments
+client = genai.Client(
+    api_key=os.getenv("GEMINI_API_KEY", "dummy-key-for-ci")
+)
 
 # Simple in-memory cache for efficiency
 _response_cache: Dict[str, str] = {}
