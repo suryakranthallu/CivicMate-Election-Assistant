@@ -172,6 +172,14 @@
             imagePreview.style.display = 'none';
         });
 
+        function openGoogleCalendar(title, date, description) {
+            const baseUrl = "https://www.google.com/calendar/render?action=TEMPLATE";
+            const text = encodeURIComponent(title);
+            const dates = `${date}/${date}`; // Single day event
+            const details = encodeURIComponent(description);
+            window.open(`${baseUrl}&text=${text}&dates=${dates}&details=${details}`, '_blank');
+        }
+
         function renderChart(container, data) {
             const canvas = document.createElement('canvas');
             canvas.className = 'chat-chart';
@@ -335,6 +343,17 @@
                         } catch (e) { console.error("Chart data error", e); }
                     }
 
+                    // Extract Calendar
+                    let calendarData = null;
+                    const calendarMatch = displayContent.match(/\[CALENDAR_DATA\]([\s\S]*?)\[\/CALENDAR_DATA\]/);
+                    if (calendarMatch) {
+                        const rawData = calendarMatch[1].trim();
+                        displayContent = displayContent.replace(calendarMatch[0], '').trim();
+                        try {
+                            calendarData = JSON.parse(rawData);
+                        } catch (e) { console.error("Calendar data error", e); }
+                    }
+
                     // Update UI
                     let finalHTML = "";
                     if (reasoningContent && showReasoning) {
@@ -344,6 +363,15 @@
                         </div>`;
                     }
                     finalHTML += marked.parse(displayContent);
+                    
+                    if (calendarData) {
+                        finalHTML += `<div class="calendar-action">
+                            <button onclick="openGoogleCalendar('${calendarData.title}', '${calendarData.date}', '${calendarData.description}')" class="calendar-btn">
+                                <i class="fab fa-google"></i> Add to Google Calendar
+                            </button>
+                        </div>`;
+                    }
+                    
                     botMsgEl.innerHTML = finalHTML;
                     
                     if (chartData && !botMsgEl.querySelector('.chat-chart')) {
@@ -354,6 +382,7 @@
                 }
                 const speechText = fullText.replace(/\[REASONING\][\s\S]*?\[\/REASONING\]/g, '')
                                          .replace(/\[CHART_DATA\][\s\S]*?\[\/CHART_DATA\]/g, '')
+                                         .replace(/\[CALENDAR_DATA\][\s\S]*?\[\/CALENDAR_DATA\]/g, '')
                                          .replace(/[#*`]/g, '');
                 speak(speechText);
             } catch (error) {
