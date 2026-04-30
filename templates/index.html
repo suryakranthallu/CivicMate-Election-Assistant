@@ -11,6 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
     <meta name="theme-color" content="#1a365d">
@@ -111,6 +112,39 @@
             window.speechSynthesis.speak(utterance);
         }
 
+        function renderChart(container, data) {
+            const canvas = document.createElement('canvas');
+            canvas.className = 'chat-chart';
+            container.appendChild(canvas);
+
+            new Chart(canvas, {
+                type: data.type || 'bar',
+                data: {
+                    labels: data.labels,
+                    datasets: data.datasets.map(ds => ({
+                        ...ds,
+                        backgroundColor: data.type === 'pie' 
+                            ? ['#1a365d', '#2b6cb0', '#4299e1', '#63b3ed'] 
+                            : 'rgba(43, 108, 176, 0.7)',
+                        borderColor: '#2b6cb0',
+                        borderWidth: 1,
+                        borderRadius: 5
+                    }))
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: getComputedStyle(document.body).getPropertyValue('--text-color') || '#2d3748' } }
+                    },
+                    scales: data.type !== 'pie' ? {
+                        y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } },
+                        x: { grid: { display: false } }
+                    } : {}
+                }
+            });
+        }
+
         // Voice Recognition Logic
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (SpeechRecognition) {
@@ -188,10 +222,28 @@
                     const { done, value } = await reader.read();
                     if (done) break;
                     fullText += decoder.decode(value, { stream: true });
-                    botMsgEl.innerHTML = marked.parse(fullText);
+                    
+                    // Separate text and chart data
+                    let displayContent = fullText;
+                    let chartData = null;
+                    
+                    const chartMatch = fullText.match(/\[CHART_DATA\]([\s\S]*?)\[\/CHART_DATA\]/);
+                    if (chartMatch) {
+                        displayContent = fullText.replace(chartMatch[0], '').trim();
+                        try {
+                            chartData = JSON.parse(chartMatch[1]);
+                        } catch (e) { console.error("Chart data error", e); }
+                    }
+
+                    botMsgEl.innerHTML = marked.parse(displayContent);
+                    
+                    if (chartData && !botMsgEl.querySelector('.chat-chart')) {
+                        renderChart(botMsgEl, chartData);
+                    }
+
                     chatBox.scrollTop = chatBox.scrollHeight;
                 }
-                speak(fullText.replace(/[#*`]/g, ''));
+                speak(fullText.replace(/\[CHART_DATA\][\s\S]*?\[\/CHART_DATA\]/g, '').replace(/[#*`]/g, ''));
             } catch (error) {
                 botMsgEl.innerHTML = marked.parse("Error: Connection lost.");
             } finally {
