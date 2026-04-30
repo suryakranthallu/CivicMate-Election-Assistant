@@ -98,9 +98,12 @@ body {
     margin: 0 auto !important;
     width: 95% !important;
     max-width: 520px !important;
-    background: #ffffff !important;
-    border-radius: 20px !important;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15) !important;
+    background: rgba(255, 255, 255, 0.88) !important; /* Semi-transparent glass */
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    border-radius: 24px !important;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15) !important;
     display: flex;
     flex-direction: column;
     height: 82vh;
@@ -216,7 +219,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    background: #f7fafc;
+    background: rgba(247, 250, 252, 0.4); /* Transparent box */
     scroll-behavior: smooth;
     transition: background 0.4s ease;
 }
@@ -487,9 +490,9 @@ body.dark-mode {
 }
 
 body.dark-mode .chat-container {
-    background: #1e293b;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6),
-                0 0 0 1px rgba(255, 255, 255, 0.05);
+    background: rgba(30, 41, 59, 0.85) !important; /* Dark Glass */
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6) !important;
 }
 
 body.dark-mode .chat-header {
