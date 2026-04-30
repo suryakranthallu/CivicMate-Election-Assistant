@@ -610,3 +610,43 @@ dark-mode .chat-chart {
 #remove-img:hover {
     transform: scale(1.2);
 }
+
+/* ===== REASONING TRACE (AI THINKING) ===== */
+.reasoning-trace {
+    background: rgba(43, 108, 176, 0.08);
+    border-left: 3px solid #4299e1;
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 15px;
+    font-size: 0.85rem;
+    color: #2b6cb0;
+    animation: fadeIn 0.5s ease;
+}
+
+dark-mode .reasoning-trace {
+    background: rgba(66, 153, 225, 0.1);
+    color: #90cdf4;
+    border-left-color: #63b3ed;
+}
+
+.reasoning-header {
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+    opacity: 0.8;
+}
+
+.reasoning-content {
+    line-height: 1.4;
+    opacity: 0.9;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}

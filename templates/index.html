@@ -49,6 +49,9 @@
                 <p>Your Smart Election Assistant</p>
             </div>
             <div class="header-actions">
+                <button id="show-reasoning" class="icon-btn" aria-label="Show AI Reasoning" title="Show AI Thinking Trace">
+                    <i class="fas fa-brain"></i>
+                </button>
                 <button id="hands-free-toggle" class="icon-btn" aria-label="Toggle Hands-Free Mode" title="Hands-Free Mode">
                     <i class="fas fa-volume-mute"></i>
                 </button>
@@ -101,6 +104,7 @@
         const quickActions = document.getElementById('quick-actions');
         const themeToggle = document.getElementById('theme-toggle');
         const handsFreeToggle = document.getElementById('hands-free-toggle');
+        const showReasoningBtn = document.getElementById('show-reasoning');
         const micBtn = document.getElementById('mic-btn');
         const uploadBtn = document.getElementById('upload-btn');
         const imageInput = document.getElementById('image-input');
@@ -109,7 +113,16 @@
         
         let isWaiting = false;
         let isHandsFree = false;
+        let showReasoning = localStorage.getItem('showReasoning') === 'true';
         let selectedImage = null;
+
+        if (showReasoning) showReasoningBtn.classList.add('active');
+
+        showReasoningBtn.addEventListener('click', () => {
+            showReasoning = !showReasoning;
+            localStorage.setItem('showReasoning', showReasoning);
+            showReasoningBtn.classList.toggle('active');
+        });
 
         // Dark Mode Logic
         if (localStorage.getItem('theme') === 'dark') {
@@ -300,19 +313,38 @@
                     if (done) break;
                     fullText += decoder.decode(value, { stream: true });
                     
-                    // Separate text and chart data
+                    // Separate text, reasoning, and chart data
                     let displayContent = fullText;
+                    let reasoningContent = "";
                     let chartData = null;
                     
-                    const chartMatch = fullText.match(/\[CHART_DATA\]([\s\S]*?)\[\/CHART_DATA\]/);
+                    // Extract Reasoning
+                    const reasoningMatch = fullText.match(/\[REASONING\]([\s\S]*?)\[\/REASONING\]/);
+                    if (reasoningMatch) {
+                        reasoningContent = reasoningMatch[1].trim();
+                        displayContent = displayContent.replace(reasoningMatch[0], '');
+                    }
+
+                    // Extract Charts
+                    const chartMatch = displayContent.match(/\[CHART_DATA\]([\s\S]*?)\[\/CHART_DATA\]/);
                     if (chartMatch) {
-                        displayContent = fullText.replace(chartMatch[0], '').trim();
+                        const rawData = chartMatch[1].trim();
+                        displayContent = displayContent.replace(chartMatch[0], '').trim();
                         try {
-                            chartData = JSON.parse(chartMatch[1]);
+                            chartData = JSON.parse(rawData);
                         } catch (e) { console.error("Chart data error", e); }
                     }
 
-                    botMsgEl.innerHTML = marked.parse(displayContent);
+                    // Update UI
+                    let finalHTML = "";
+                    if (reasoningContent && showReasoning) {
+                        finalHTML += `<div class="reasoning-trace">
+                            <div class="reasoning-header"><i class="fas fa-microchip"></i> AI Thinking Trace</div>
+                            <div class="reasoning-content">${marked.parse(reasoningContent)}</div>
+                        </div>`;
+                    }
+                    finalHTML += marked.parse(displayContent);
+                    botMsgEl.innerHTML = finalHTML;
                     
                     if (chartData && !botMsgEl.querySelector('.chat-chart')) {
                         renderChart(botMsgEl, chartData);
@@ -320,7 +352,10 @@
 
                     chatBox.scrollTop = chatBox.scrollHeight;
                 }
-                speak(fullText.replace(/\[CHART_DATA\][\s\S]*?\[\/CHART_DATA\]/g, '').replace(/[#*`]/g, ''));
+                const speechText = fullText.replace(/\[REASONING\][\s\S]*?\[\/REASONING\]/g, '')
+                                         .replace(/\[CHART_DATA\][\s\S]*?\[\/CHART_DATA\]/g, '')
+                                         .replace(/[#*`]/g, '');
+                speak(speechText);
             } catch (error) {
                 botMsgEl.innerHTML = marked.parse("Error: Connection lost.");
             } finally {
