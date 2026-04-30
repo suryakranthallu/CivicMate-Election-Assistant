@@ -2,6 +2,8 @@
 venv/
 env/
 .env
+.env.bak
+.env.txt
 
 # Python Cache
 __pycache__/
@@ -12,6 +14,10 @@ __pycache__/
 .DS_Store
 Thumbs.db
 desktop.ini
+*.xml
+*.txt
+.coverage
+htmlcov/
 
 # IDE files
 .vscode/
