@@ -16,9 +16,9 @@ from app.gemini_service import (
 class TestExtractLocation:
     """Tests for extract_location utility."""
 
-    def test_extract_zip(self):
-        """Should extract a 5-digit zip code."""
-        assert extract_location("I live in 90210") == "90210"
+    def test_extract_pincode(self):
+        """Should extract a 6-digit Indian Pincode."""
+        assert extract_location("I live in 560001") == "560001"
 
     def test_extract_address(self):
         """Should extract a standard street address."""

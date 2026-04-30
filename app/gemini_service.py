@@ -55,10 +55,13 @@ SYSTEM_PROMPT = (
 
 
 def extract_location(text: str) -> Optional[str]:
-    """Extract an address or zip code from user text."""
-    zip_match = re.search(r'\b\d{5}\b', text)
-    if zip_match:
-        return zip_match.group(0)
+    """
+    Extract an address or Indian Pincode from user text.
+    Modified for ECI Edition to support 6-digit Pincodes.
+    """
+    pincode_match = re.search(r'\b\d{6}\b', text)
+    if pincode_match:
+        return pincode_match.group(0)
 
     address_pattern = (
         r'\b\d{1,5}\s+[A-Za-z0-9\s.,]+'
