@@ -10,6 +10,8 @@ from flask import (
     Flask, Response, jsonify, render_template,
     request, session, stream_with_context
 )
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 from app.gemini_service import (
     analyze_voter_intent,
@@ -42,6 +44,14 @@ app = Flask(
     static_folder='../static'
 )
 app.secret_key = os.getenv("FLASK_SECRET_KEY", os.urandom(24))
+
+# Setup Rate Limiting for DDoS protection
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["200 per day", "50 per hour"],
+    storage_uri="memory://"
+)
 
 
 @app.after_request
@@ -131,6 +141,7 @@ def chat() -> tuple:
 
 
 @app.route('/chat_stream', methods=['POST'])
+@limiter.limit("20 per minute")
 def chat_stream() -> Response:
     """Handle incoming chat messages and stream AI responses in real-time."""
     data = request.get_json(silent=True)

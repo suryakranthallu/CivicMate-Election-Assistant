@@ -17,6 +17,7 @@ def client():
     """Create a test client for the Flask app."""
     app.config['TESTING'] = True
     app.config['SECRET_KEY'] = 'test-secret-key'
+    app.config['RATELIMIT_ENABLED'] = False
     with app.test_client() as test_client:
         yield test_client
 
@@ -221,6 +222,14 @@ class TestSecurityHeaders:
         """Response should have Referrer-Policy header."""
         response = client.get('/')
         assert response.headers.get('Referrer-Policy') is not None
+
+    def test_static_asset_cache_control(self, client):
+        """Static assets should have public cache-control."""
+        response = client.get('/static/style.css')
+        cache = response.headers.get('Cache-Control')
+        assert cache is not None
+        assert 'public' in cache
+        assert '31536000' in cache
 
 
 class TestAccessibility:

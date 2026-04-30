@@ -2,10 +2,13 @@ FROM python:3.13-slim
 
 WORKDIR /app
 
-COPY requirements.txt .
+RUN useradd -m appuser && chown -R appuser /app
+USER appuser
+
+COPY --chown=appuser:appuser requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+COPY --chown=appuser:appuser . .
 
 EXPOSE 8080
 
