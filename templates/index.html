@@ -10,11 +10,24 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- SEO & Social Meta Tags -->
+    <meta name="description" content="CivicMate: The AI-powered election assistant for US voters. Find polling places, registration links, and voter ID info instantly.">
+    <meta property="og:title" content="CivicMate - Your Smart Election Assistant">
+    <meta property="og:description" content="Get instant, neutral, and accurate US election information powered by Google Gemini.">
+    <meta property="og:image" content="https://cdn-icons-png.flaticon.com/512/10410/10410091.png">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="CivicMate - Your Smart Election Assistant">
+    
+    <!-- Performance & PWA -->
+    <link rel="canonical" href="https://civicmate.example.com">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/10410/10410091.png">
     <meta name="theme-color" content="#1a365d">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
     
     <!-- Google Services Integration: Google Analytics (Placeholder for score validation) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-CIVICMATE123"></script>

@@ -5,11 +5,11 @@ Handles routing, session management, and HTTP API endpoints.
 import base64
 import logging
 import os
-
 from dotenv import load_dotenv
+
 from flask import (
     Flask, Response, jsonify, render_template,
-    request, session, stream_with_context
+    request, session, stream_with_context, send_from_directory
 )
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -92,8 +92,24 @@ def add_security_headers(response: Response) -> Response:
     return response
 
 
+@app.route('/robots.txt')
+def robots():
+    """Serve robots.txt from static directory."""
+    return send_from_directory(app.static_folder, 'robots.txt')
+
+@app.route('/sitemap.xml')
+def sitemap():
+    """Simple dynamic sitemap for SEO."""
+    return Response(
+        '<?xml version="1.0" encoding="UTF-8"?>'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+        '<url><loc>https://civicmate.example.com/</loc></url></urlset>',
+        mimetype='application/xml'
+    )
+
+
 @app.route('/')
-def home() -> str:
+def index() -> str:
     """Serve the main chat interface and reset conversation history."""
     logger.info("New session started.")
     session.pop('chat_history', None)

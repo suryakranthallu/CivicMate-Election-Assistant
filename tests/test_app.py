@@ -292,3 +292,20 @@ class TestVisionRoute:
         mock_analyze.side_effect = Exception("Broke")
         response = client.post('/chat_vision', json={'image': 'ZHVtbXk='})
         assert response.status_code == 500
+
+
+class TestSEO:
+    """Tests for SEO-related endpoints."""
+
+    def test_robots_txt(self, client):
+        """Should serve robots.txt."""
+        response = client.get('/robots.txt')
+        assert response.status_code == 200
+        assert b'User-agent' in response.data
+
+    def test_sitemap_xml(self, client):
+        """Should serve sitemap.xml."""
+        response = client.get('/sitemap.xml')
+        assert response.status_code == 200
+        assert b'xml' in response.data
+        assert b'urlset' in response.data
