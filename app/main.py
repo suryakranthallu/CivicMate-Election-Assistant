@@ -2,6 +2,7 @@
 CivicMate Flask Backend.
 Handles routing, session management, and HTTP API endpoints.
 """
+import base64
 import logging
 import os
 
@@ -17,6 +18,7 @@ from app.gemini_service import (
     analyze_voter_intent,
     analyze_voter_intent_stream
 )
+from app.vision_service import analyze_id_document
 
 # Configure structured logging
 logging.basicConfig(
@@ -96,6 +98,30 @@ def home() -> str:
     logger.info("New session started.")
     session.pop('chat_history', None)
     return render_template('index.html')
+
+
+@app.route('/chat_vision', methods=['POST'])
+@limiter.limit("5 per minute")
+def chat_vision():
+    """Handles multimodal chat requests with images."""
+    data = request.json
+    if not data or 'image' not in data:
+        return jsonify({"error": "No image data provided"}), 400
+    
+    try:
+        # Extract base64 data (strip prefix if present)
+        img_b64 = data['image']
+        if ',' in img_b64:
+            img_b64 = img_b64.split(',')[1]
+        
+        image_bytes = base64.b64decode(img_b64)
+        state = data.get('state')
+        
+        analysis = analyze_id_document(image_bytes, state)
+        return jsonify({"analysis": analysis})
+    except Exception as e:
+        app.logger.error(f"Vision route error: {e}")
+        return jsonify({"error": "Failed to process image"}), 500
 
 
 @app.route('/chat', methods=['POST'])

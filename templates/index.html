@@ -62,6 +62,10 @@
             <button type="button" id="mic-btn" class="icon-btn" aria-label="Use Microphone">
                 <i class="fas fa-microphone"></i>
             </button>
+            <button type="button" id="upload-btn" class="icon-btn" aria-label="Upload ID Photo" title="Upload ID Photo for verification">
+                <i class="fas fa-paperclip"></i>
+            </button>
+            <input type="file" id="image-input" accept="image/*" style="display: none;">
             <label for="user-input" class="visually-hidden">Type your question for CivicMate</label>
             <input type="text" id="user-input" placeholder="Type your question here..." required
                 aria-label="Type your question" maxlength="500" autocomplete="off">
@@ -70,6 +74,10 @@
                 <span class="btn-icon" aria-hidden="true">➤</span>
             </button>
         </form>
+        <div id="image-preview" class="image-preview" style="display: none;">
+            <img src="" alt="Selected document preview">
+            <button id="remove-img" aria-label="Remove image">&times;</button>
+        </div>
     </main>
 
     <script>
@@ -81,8 +89,14 @@
         const themeToggle = document.getElementById('theme-toggle');
         const handsFreeToggle = document.getElementById('hands-free-toggle');
         const micBtn = document.getElementById('mic-btn');
+        const uploadBtn = document.getElementById('upload-btn');
+        const imageInput = document.getElementById('image-input');
+        const imagePreview = document.getElementById('image-preview');
+        const removeImgBtn = document.getElementById('remove-img');
+        
         let isWaiting = false;
         let isHandsFree = false;
+        let selectedImage = null;
 
         // Dark Mode Logic
         if (localStorage.getItem('theme') === 'dark') {
@@ -111,6 +125,26 @@
             // Auto-detect voice based on language or use default
             window.speechSynthesis.speak(utterance);
         }
+
+        // Image Handling Logic
+        uploadBtn.addEventListener('click', () => imageInput.click());
+        imageInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    selectedImage = event.target.result;
+                    imagePreview.querySelector('img').src = selectedImage;
+                    imagePreview.style.display = 'flex';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        removeImgBtn.addEventListener('click', () => {
+            selectedImage = null;
+            imageInput.value = '';
+            imagePreview.style.display = 'none';
+        });
 
         function renderChart(container, data) {
             const canvas = document.createElement('canvas');
@@ -192,10 +226,40 @@
 
             appendMessage('user-message', text, 'You', false);
             inputField.value = '';
-
             isWaiting = true;
             sendBtn.disabled = true;
             inputField.disabled = true;
+
+            if (selectedImage) {
+                // Multimodal Vision Path
+                appendMessage('user-message', `Sent an image: ${text}`, 'You');
+                const botMsgId = appendMessage('bot-message', 'Analyzing document...', 'CivicMate', false);
+                const botMsgEl = document.getElementById(botMsgId).querySelector('.message-content');
+                
+                try {
+                    const response = await fetch('/chat_vision', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ image: selectedImage, message: text })
+                    });
+                    const data = await response.json();
+                    botMsgEl.innerHTML = marked.parse(data.analysis || "Error analyzing image.");
+                    speak(botMsgEl.innerText);
+                } catch (e) {
+                    botMsgEl.innerHTML = "Error connecting to vision service.";
+                } finally {
+                    selectedImage = null;
+                    imagePreview.style.display = 'none';
+                    isWaiting = false;
+                    sendBtn.disabled = false;
+                    inputField.disabled = false;
+                }
+                return;
+            }
+
+            // Normal Text Path
+            appendMessage('user-message', text, 'You', false);
+            inputField.value = '';
 
             const botMsgId = appendMessage('bot-message', '', 'CivicMate', false);
             const botMsgEl = document.getElementById(botMsgId).querySelector('.message-content');
