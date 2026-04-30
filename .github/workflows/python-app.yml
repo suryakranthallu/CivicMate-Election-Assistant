@@ -33,4 +33,4 @@ jobs:
         pylint app tests --exit-zero
     - name: Test with pytest
       run: |
-        python -m pytest tests/ --cov=app --cov-report=xml
+        python -m pytest tests/ -v -s --cov=app --cov-report=xml

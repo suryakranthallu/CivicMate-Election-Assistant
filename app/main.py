@@ -99,13 +99,16 @@ def add_security_headers(response: Response) -> Response:
 
 @app.route('/robots.txt')
 def robots():
-    """Serve robots.txt from static directory."""
-    return send_from_directory(STATIC_DIR, 'robots.txt')
+    """Serve robots.txt content directly."""
+    return Response(
+        "User-agent: *\nAllow: /\nSitemap: https://civicmate.example.com/sitemap.xml",
+        mimetype='text/plain'
+    )
 
 
 @app.route('/sitemap.xml')
 def sitemap():
-    """Simple dynamic sitemap for SEO."""
+    """Serve sitemap.xml content directly."""
     return Response(
         '<?xml version="1.0" encoding="UTF-8"?>'
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
