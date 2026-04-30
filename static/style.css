@@ -7,13 +7,45 @@
 
 body {
     font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    /* Indian Tricolor Theme Background */
+    background: linear-gradient(135deg, #FF9933 0%, #FFFFFF 50%, #138808 100%);
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
     padding: 16px;
     transition: background 0.4s ease;
+}
+
+/* ===== DISCLAIMER BANNER ===== */
+.disclaimer-banner {
+    width: 100%;
+    max-width: 520px;
+    background: rgba(255, 153, 51, 0.15); /* Light Saffron */
+    border: 1px solid #FF9933;
+    color: #000080; /* Navy Blue text for high contrast */
+    padding: 10px 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-size: 0.85rem;
+    text-align: center;
+    line-height: 1.4;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.disclaimer-banner strong {
+    font-weight: 700;
+}
+
+.disclaimer-banner a {
+    color: #000080;
+    text-decoration: underline;
+    font-weight: 600;
+}
+
+.disclaimer-banner a:hover {
+    color: #138808;
 }
 
 /* ===== SKIP LINK (Accessibility) ===== */
@@ -69,7 +101,7 @@ body {
 
 /* ===== HEADER ===== */
 .chat-header {
-    background: linear-gradient(135deg, #1a365d 0%, #2b6cb0 100%);
+    background: linear-gradient(135deg, #000080 0%, #1a365d 100%); /* Navy Blue Gradient */
     color: white;
     padding: 20px 20px;
     display: flex;
@@ -86,7 +118,8 @@ body {
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, #e53e3e, #ffffff, #3182ce);
+    /* Indian Flag Line */
+    background: linear-gradient(90deg, #FF9933 33%, #FFFFFF 33%, #FFFFFF 66%, #138808 66%);
 }
 
 .header-title {
@@ -134,10 +167,10 @@ body {
 }
 
 .icon-btn.active {
-    background: #48bb78;
+    background: #138808; /* India Green */
     color: white;
-    border-color: #2f855a;
-    box-shadow: 0 0 10px rgba(72, 187, 120, 0.4);
+    border-color: #0d5f06;
+    box-shadow: 0 0 10px rgba(19, 136, 8, 0.4);
 }
 
 .icon-btn:focus {
@@ -145,11 +178,10 @@ body {
     outline-offset: 2px;
 }
 
-/* Mic button in input area needs different colors */
 .input-area .icon-btn {
     background: #edf2f7;
     border: 1px solid #e2e8f0;
-    color: #2b6cb0;
+    color: #000080; /* Navy */
 }
 
 .input-area .icon-btn:hover {
@@ -254,10 +286,11 @@ body {
 }
 
 .user-message {
-    background: linear-gradient(135deg, #2b6cb0 0%, #1a365d 100%);
+    background: #000080; /* Navy Blue */
     color: white;
     align-self: flex-end;
     border-bottom-right-radius: 4px;
+    box-shadow: 0 4px 15px rgba(0, 0, 128, 0.15);
 }
 
 .user-message .message-label {
@@ -280,23 +313,21 @@ body {
 
 .quick-btn {
     background: white;
-    color: #2b6cb0;
-    border: 1.5px solid #bee3f8;
-    padding: 8px 14px;
+    color: #000080; /* Navy Blue */
+    border: 1px solid #FF9933; /* Saffron */
     border-radius: 20px;
-    cursor: pointer;
-    font-size: 0.8rem;
-    font-family: 'Inter', sans-serif;
+    padding: 8px 16px;
+    font-size: 0.85rem;
     font-weight: 500;
+    cursor: pointer;
     transition: all 0.2s ease;
     white-space: nowrap;
 }
 
 .quick-btn:hover {
-    background: #ebf8ff;
-    border-color: #2b6cb0;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(43, 108, 176, 0.15);
+    background: #FF9933;
+    color: white;
+    transform: translateY(-2px);
 }
 
 .quick-btn:focus {
@@ -376,26 +407,23 @@ body {
     cursor: not-allowed;
 }
 
-#send-btn {
-    background: linear-gradient(135deg, #2b6cb0 0%, #1a365d 100%);
+.send-btn {
+    background: #000080; /* Navy Blue */
     color: white;
     border: none;
-    padding: 12px 20px;
     border-radius: 12px;
-    cursor: pointer;
+    padding: 0 20px;
     font-weight: 600;
-    font-size: 0.9rem;
-    font-family: 'Inter', sans-serif;
+    cursor: pointer;
     transition: all 0.2s ease;
     display: flex;
     align-items: center;
-    gap: 6px;
-    white-space: nowrap;
+    gap: 8px;
 }
 
-#send-btn:hover:not(:disabled) {
+.send-btn:hover:not(:disabled) {
+    background: #1a365d;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(26, 54, 93, 0.3);
 }
 
 #send-btn:active:not(:disabled) {
@@ -630,15 +658,16 @@ dark-mode .reasoning-trace {
 }
 
 .reasoning-header {
+    font-size: 0.75rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    font-size: 0.7rem;
+    color: #FF9933; /* Saffron */
+    margin-bottom: 8px;
     display: flex;
     align-items: center;
     gap: 6px;
-    margin-bottom: 8px;
-    opacity: 0.8;
+    border-bottom: 1px solid rgba(255, 153, 51, 0.2);
+    padding-bottom: 6px;
 }
 
 .reasoning-content {
