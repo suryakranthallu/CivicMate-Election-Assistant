@@ -7,9 +7,14 @@
 
 body {
     font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    /* Indian Tricolor: Saffron top → White center → Green bottom */
-    background: linear-gradient(180deg, #FF9933 0%, #FFFFFF 40%, #FFFFFF 60%, #138808 100%) !important;
-    background-attachment: fixed !important;
+    /* Animated Indian Tricolor Live Wallpaper */
+    background: linear-gradient(-45deg,
+        #FF9933, #FFB366, #FFFFFF, #FFFFFF,
+        #90EE90, #138808, #0d6b06,
+        #138808, #FFFFFF, #FFFFFF,
+        #FFB366, #FF9933) !important;
+    background-size: 400% 400% !important;
+    animation: tricolorFlow 12s ease infinite !important;
     display: flex !important;
     flex-direction: column !important;
     justify-content: center !important;
@@ -17,6 +22,14 @@ body {
     min-height: 100vh !important;
     padding: 20px 16px 60px !important;
     margin: 0 !important;
+}
+
+@keyframes tricolorFlow {
+    0%   { background-position: 0% 50%; }
+    25%  { background-position: 50% 100%; }
+    50%  { background-position: 100% 50%; }
+    75%  { background-position: 50% 0%; }
+    100% { background-position: 0% 50%; }
 }
 
 /* ===== DISCLAIMER FOOTER ===== */
@@ -445,8 +458,13 @@ body {
 
 /* ===== DARK MODE ===== */
 body.dark-mode {
-    background: linear-gradient(180deg, #cc7a29 0%, #1a1a2e 40%, #1a1a2e 60%, #0a5e04 100%) !important;
-    background-attachment: fixed !important;
+    background: linear-gradient(-45deg,
+        #cc7a29, #995c1f, #1a1a2e, #1a1a2e,
+        #0a5e04, #064d03, #032601,
+        #064d03, #1a1a2e, #1a1a2e,
+        #995c1f, #cc7a29) !important;
+    background-size: 400% 400% !important;
+    animation: tricolorFlow 12s ease infinite !important;
 }
 
 body.dark-mode .chat-container {
