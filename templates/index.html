@@ -34,9 +34,14 @@
                 <h1>🇺🇸 CivicMate</h1>
                 <p>Your Smart Election Assistant</p>
             </div>
-            <button id="theme-toggle" class="icon-btn" aria-label="Toggle Dark Mode">
-                <i class="fas fa-moon"></i>
-            </button>
+            <div class="header-actions">
+                <button id="hands-free-toggle" class="icon-btn" aria-label="Toggle Hands-Free Mode" title="Hands-Free Mode">
+                    <i class="fas fa-volume-mute"></i>
+                </button>
+                <button id="theme-toggle" class="icon-btn" aria-label="Toggle Dark Mode">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
         </header>
 
         <div class="chat-box" id="chat-box" role="log" aria-live="polite" aria-label="Chat messages">
@@ -73,8 +78,10 @@
         const chatBox = document.getElementById('chat-box');
         const quickActions = document.getElementById('quick-actions');
         const themeToggle = document.getElementById('theme-toggle');
+        const handsFreeToggle = document.getElementById('hands-free-toggle');
         const micBtn = document.getElementById('mic-btn');
         let isWaiting = false;
+        let isHandsFree = false;
 
         // Dark Mode Logic
         if (localStorage.getItem('theme') === 'dark') {
@@ -87,6 +94,22 @@
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
             themeToggle.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
         });
+
+        // Hands-Free Logic
+        handsFreeToggle.addEventListener('click', () => {
+            isHandsFree = !isHandsFree;
+            handsFreeToggle.innerHTML = isHandsFree ? '<i class="fas fa-volume-up"></i>' : '<i class="fas fa-volume-mute"></i>';
+            handsFreeToggle.classList.toggle('active', isHandsFree);
+            if (!isHandsFree) window.speechSynthesis.cancel();
+        });
+
+        function speak(text) {
+            if (!isHandsFree) return;
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            // Auto-detect voice based on language or use default
+            window.speechSynthesis.speak(utterance);
+        }
 
         // Voice Recognition Logic
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -168,6 +191,7 @@
                     botMsgEl.innerHTML = marked.parse(fullText);
                     chatBox.scrollTop = chatBox.scrollHeight;
                 }
+                speak(fullText.replace(/[#*`]/g, ''));
             } catch (error) {
                 botMsgEl.innerHTML = marked.parse("Error: Connection lost.");
             } finally {
