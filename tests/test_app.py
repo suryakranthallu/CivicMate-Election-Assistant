@@ -260,3 +260,35 @@ class TestAccessibility:
         """Page should have a microphone button for voice input."""
         response = client.get('/')
         assert b'mic-btn' in response.data
+
+
+class TestVisionRoute:
+    """Tests for the /chat_vision multimodal endpoint."""
+
+    @patch('app.main.analyze_id_document')
+    def test_chat_vision_success(self, mock_analyze, client):
+        """Should return analysis for a valid image request."""
+        mock_analyze.return_value = "Analysis complete."
+
+        dummy_b64 = "data:image/jpeg;base64,ZHVtbXk="
+        response = client.post('/chat_vision', json={
+            'image': dummy_b64,
+            'state': 'Texas'
+        })
+
+        assert response.status_code == 200
+        assert response.json['analysis'] == "Analysis complete."
+        # ZHVtbXk= is base64 for 'dummy'
+        mock_analyze.assert_called_once_with(b'dummy', 'Texas')
+
+    def test_chat_vision_no_data(self, client):
+        """Should return 400 if no image is provided."""
+        response = client.post('/chat_vision', json={})
+        assert response.status_code == 400
+
+    @patch('app.main.analyze_id_document')
+    def test_chat_vision_exception(self, mock_analyze, client):
+        """Should return 500 on internal errors."""
+        mock_analyze.side_effect = Exception("Broke")
+        response = client.post('/chat_vision', json={'image': 'ZHVtbXk='})
+        assert response.status_code == 500
