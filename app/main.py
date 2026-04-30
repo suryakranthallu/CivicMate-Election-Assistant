@@ -97,6 +97,7 @@ def robots():
     """Serve robots.txt from static directory."""
     return send_from_directory(app.static_folder, 'robots.txt')
 
+
 @app.route('/sitemap.xml')
 def sitemap():
     """Simple dynamic sitemap for SEO."""
@@ -123,20 +124,20 @@ def chat_vision():
     data = request.json
     if not data or 'image' not in data:
         return jsonify({"error": "No image data provided"}), 400
-    
+
     try:
         # Extract base64 data (strip prefix if present)
         img_b64 = data['image']
         if ',' in img_b64:
             img_b64 = img_b64.split(',')[1]
-        
+
         image_bytes = base64.b64decode(img_b64)
         state = data.get('state')
-        
+
         analysis = analyze_id_document(image_bytes, state)
         return jsonify({"analysis": analysis})
-    except Exception as e:
-        app.logger.error(f"Vision route error: {e}")
+    except Exception as e:  # pylint: disable=broad-exception-caught
+        app.logger.error("Vision route error: %s", e)
         return jsonify({"error": "Failed to process image"}), 500
 
 

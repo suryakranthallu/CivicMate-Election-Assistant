@@ -1,3 +1,6 @@
+"""
+Vision service for analyzing Voter ID documents using Gemini.
+"""
 import os
 import logging
 from typing import Optional
@@ -10,6 +13,7 @@ logger = logging.getLogger(__name__)
 client = genai.Client(
     api_key=os.getenv("GEMINI_API_KEY", "dummy-key-for-ci")
 )
+
 
 def analyze_id_document(image_data: str, state: Optional[str] = None) -> str:
     """
@@ -24,7 +28,7 @@ def analyze_id_document(image_data: str, state: Optional[str] = None) -> str:
         )
         if state:
             prompt += f"Focus specifically on the laws for the state of {state}. "
-        
+
         prompt += (
             "\n\nInstructions:\n"
             "1. Identify the document type (e.g., Driver's License, Passport, Utility Bill).\n"
@@ -46,6 +50,6 @@ def analyze_id_document(image_data: str, state: Optional[str] = None) -> str:
             ]
         )
         return response.text
-    except Exception as e:
-        logger.error(f"Vision analysis error: {e}")
+    except Exception as e:  # pylint: disable=broad-exception-caught
+        logger.error("Vision analysis error: %s", e)
         return "Error analyzing document. Please ensure it's a clear photo of an ID."

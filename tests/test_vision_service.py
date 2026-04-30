@@ -1,8 +1,12 @@
-import pytest
+"""
+Tests for the vision service module.
+"""
 from unittest.mock import patch, MagicMock
 from app.vision_service import analyze_id_document
 
+
 class TestVisionService:
+    """Tests for the Voter ID Vision Analysis service."""
     @patch('app.vision_service.client.models.generate_content')
     def test_analyze_id_document_success(self, mock_generate):
         """Should return analysis text on success."""
@@ -11,7 +15,7 @@ class TestVisionService:
         mock_generate.return_value = mock_response
 
         result = analyze_id_document(b"dummy_bytes", "California")
-        
+
         assert "This is a valid Driver's License." in result
         mock_generate.assert_called_once()
         # Verify state is in the prompt
@@ -32,6 +36,6 @@ class TestVisionService:
     def test_analyze_id_document_error(self, mock_generate):
         """Should return error message on failure."""
         mock_generate.side_effect = Exception("API Down")
-        
+
         result = analyze_id_document(b"dummy_bytes")
         assert "Error analyzing document" in result
