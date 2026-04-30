@@ -549,7 +549,7 @@ body.dark-mode .typing-dots span {
 /* ===== RESPONSIVE ===== */
 @media (max-width: 520px) {
     body {
-        padding: 0;
+        padding: 0 0 50px !important;
     }
 
     .chat-container {

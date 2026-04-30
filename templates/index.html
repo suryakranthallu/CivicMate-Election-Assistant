@@ -124,11 +124,10 @@
             showReasoningBtn.classList.toggle('active');
         });
 
-        // Dark Mode Logic
-        if (localStorage.getItem('theme') === 'dark') {
-            document.body.classList.add('dark-mode');
-            themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
-        }
+        // Dark Mode Logic — Default to LIGHT to show tricolor flag
+        localStorage.removeItem('theme');
+        document.body.classList.remove('dark-mode');
+        themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
         themeToggle.addEventListener('click', () => {
             document.body.classList.toggle('dark-mode');
             const isDark = document.body.classList.contains('dark-mode');
