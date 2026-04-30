@@ -7,44 +7,38 @@
 
 body {
     font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    /* Indian Tricolor Theme Background */
-    background: linear-gradient(135deg, #FF9933 0%, #FFFFFF 50%, #138808 100%);
+    background: #f4f5f7;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
     min-height: 100vh;
-    padding: 16px;
+    padding: 24px 16px 0;
     transition: background 0.4s ease;
 }
 
-/* ===== DISCLAIMER BANNER ===== */
-.disclaimer-banner {
+/* ===== DISCLAIMER FOOTER ===== */
+.disclaimer-footer {
     width: 100%;
-    max-width: 520px;
-    background: rgba(255, 153, 51, 0.15); /* Light Saffron */
-    border: 1px solid #FF9933;
-    color: #000080; /* Navy Blue text for high contrast */
-    padding: 10px 16px;
-    border-radius: 8px;
-    margin-bottom: 16px;
-    font-size: 0.85rem;
     text-align: center;
-    line-height: 1.4;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    padding: 15px 16px;
+    font-size: 12px;
+    color: #495057;
+    line-height: 1.5;
+    flex-shrink: 0;
 }
 
-.disclaimer-banner strong {
+.disclaimer-footer strong {
     font-weight: 700;
 }
 
-.disclaimer-banner a {
+.disclaimer-footer a {
     color: #000080;
     text-decoration: underline;
     font-weight: 600;
 }
 
-.disclaimer-banner a:hover {
+.disclaimer-footer a:hover {
     color: #138808;
 }
 
@@ -80,23 +74,22 @@ body {
 
 /* ===== CHAT CONTAINER ===== */
 .chat-container {
-    width: 100%;
-    max-width: 520px;
+    width: 95%;
+    max-width: 900px;
     background: #ffffff;
     border-radius: 20px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3),
-                0 0 0 1px rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
-    height: 90vh;
-    max-height: 750px;
+    flex: 1;
+    max-height: 85vh;
     overflow: hidden;
+    margin: 0 auto;
     transition: background 0.4s ease, box-shadow 0.3s ease;
 }
 
 .chat-container:hover {
-    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.35),
-                0 0 0 1px rgba(255, 255, 255, 0.15);
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.14);
 }
 
 /* ===== HEADER ===== */
