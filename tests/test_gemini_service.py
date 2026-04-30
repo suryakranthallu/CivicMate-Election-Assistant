@@ -159,6 +159,76 @@ class TestAnalyzeVoterIntent:
         with pytest.raises(Exception, match="API Down"):
             analyze_voter_intent("Fail please")
 
+    @patch('app.gemini_service.client')
+    @patch('app.gemini_service.get_civic_info')
+    @patch('app.gemini_service.os.getenv')
+    def test_eci_state_1_unregistered(self, mock_getenv, mock_civic, mock_client):
+        """Should handle State 1: Unregistered."""
+        mock_getenv.return_value = "TEST_KEY"
+        mock_civic.return_value = None
+
+        mock_response = MagicMock()
+        mock_response.text = (
+            "[REASONING]State 1[/REASONING] Please visit the ECI portal to register."
+        )
+        mock_client.models.generate_content.return_value = mock_response
+
+        from app.gemini_service import _response_cache
+        _response_cache.clear()
+
+        response = analyze_voter_intent("How do I register?")
+        assert "ECI portal" in response
+        assert "[REASONING]" in response
+
+    @patch('app.gemini_service.client')
+    @patch('app.gemini_service.get_civic_info')
+    @patch('app.gemini_service.os.getenv')
+    def test_eci_state_2_registered_no_booth(self, mock_getenv, mock_civic, mock_client):
+        """Should handle State 2: Registered but no booth."""
+        mock_getenv.return_value = "TEST_KEY"
+        mock_civic.return_value = None
+
+        mock_response = MagicMock()
+        mock_response.text = (
+            "[REASONING]State 2[/REASONING] Search the ECI Electoral Roll using your EPIC."
+        )
+        mock_client.models.generate_content.return_value = mock_response
+
+        from app.gemini_service import _response_cache
+        _response_cache.clear()
+
+        response = analyze_voter_intent("I am registered but don't know my booth.")
+        assert "EPIC" in response
+        assert "[REASONING]" in response
+
+    @patch('app.gemini_service.client')
+    @patch('app.gemini_service.get_civic_info')
+    @patch('app.gemini_service.os.getenv')
+    def test_eci_state_3_fully_ready_with_calendar(self, mock_getenv, mock_civic, mock_client):
+        """Should handle State 3: Fully Ready with Itinerary and Calendar Data."""
+        mock_getenv.return_value = "TEST_KEY"
+        mock_civic.return_value = {"polling_location": "School"}
+
+        mock_response = MagicMock()
+        mock_response.text = (
+            "[REASONING]State 3. Mid-morning is best to avoid crowds.[/REASONING]\n"
+            "Here is your itinerary. Vote at 11:00 AM.\n"
+            "[CALENDAR_DATA]{\"title\": \"Voting Day\", \"date\": \"20240520\", "
+            "\"description\": \"Vote at Booth X\"}[/CALENDAR_DATA]"
+        )
+        mock_client.models.generate_content.return_value = mock_response
+
+        from app.gemini_service import _response_cache
+        _response_cache.clear()
+
+        response = analyze_voter_intent(
+            "I have my EPIC and know my booth. What time should I vote?"
+        )
+        assert "11:00 AM" in response
+        assert "[CALENDAR_DATA]" in response
+        assert "20240520" in response
+        assert "[REASONING]" in response
+
 
 class TestAnalyzeVoterIntentStream:
     """Tests for analyze_voter_intent_stream."""
